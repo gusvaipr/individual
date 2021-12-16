@@ -1,0 +1,36 @@
+name: Pre-work
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  pre-work:
+    runs-on: ubuntu-latest
+    env:
+      path: build
+    steps:
+    - name: Check out code
+      uses: actions/checkout@master
+    - name: Collect C++ coverage information
+        run: |
+          lcov --directory . --capture --output-file coverage.info
+          lcov --remove coverage.info '/usr/*' "${HOME}"'/.cache/*' "$(pwd)/test/*" "$(pwd)/build/*" --output-file coverage.info
+          lcov --list coverage.info | tee coverage_table.txt
+     - name: Collect CMake coverage information
+        run: |
+          ci/scan-cmake-commands.sh
+    - name: Upload to gdrive
+        uses: team-tumbleweed/gdrive-upload-action@main
+        with:
+          filename: "coverage_table.txt"
+          folderId: ${{ secrets.FOLDERID }}
+          credentials: ${{ secrets.DRIVE_TOKEN }}
+    - name: Create build directory
+      run: mkdir ${{ env.path }}
+    - name: Compile
+      working-directory: ${{ env.path }}
+      run: |
+        cmake ..
+        make
+    - name: Run tests
+      working-directory: ${{ env.path }}
+      run: ./NumberGenerators-ut

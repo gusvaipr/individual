@@ -21,10 +21,7 @@ jobs:
       run: |
           apt-get update
           apt-get install -y lcov curl wget git cmake ninja-build g++ libboost-all-dev libmosquitto-dev pkg-config jq perl-base
-          ninja --version
-          cmake --version
-          wget -O Juniper.deb https://www.juniper-lang.org/installers/Juniper-3.0.0.deb
-          apt-get install ./Juniper.deb
+        
     - name: Collect C++ coverage information
       run: |
           lcov --directory . --capture --output-file coverage.info
